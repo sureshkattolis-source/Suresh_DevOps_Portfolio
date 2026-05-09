@@ -93,28 +93,31 @@ function initializeSmoothScroll() {
 
 /**
  * FORM VALIDATION
- * Let Netlify Forms handle the submission
- * Just do client-side validation
+ * Handle contact form validation and submission
  */
 function initializeFormValidation() {
     const form = document.getElementById('contactForm');
     if (!form) return;
     
-    // Add client-side validation but allow Netlify to handle submission
     form.addEventListener('submit', (e) => {
+        // Removed e.preventDefault() - allow Netlify to submit form
+        
+        // Clear previous messages
+        const formMessage = document.getElementById('formMessage');
+        formMessage.className = 'form__message';
+        
         // Get form data
         const name = document.getElementById('name').value.trim();
         const email = document.getElementById('email').value.trim();
         const message = document.getElementById('message').value.trim();
         
-        // Validate form - show errors but don't prevent submission
+        // Validate form
         const isValid = validateForm(name, email, message);
         
-        // If validation fails, prevent submission
-        if (!isValid) {
-            e.preventDefault();
+        if (isValid) {
+            // Simulate form submission
+            submitForm(form, name, email, message);
         }
-        // If valid, let form submit naturally to Netlify
     });
 }
 
@@ -181,11 +184,55 @@ function showError(fieldId, errorText) {
 }
 
 /**
- * Netlify handles form submissions automatically
- * No need for manual submission function
- * 
- * Form will be submitted to Netlify and you'll receive email notifications
+ * Submit form (in a real app, this would send to a backend)
+ * @param {HTMLFormElement} form - The form element
+ * @param {string} name - User name
+ * @param {string} email - User email
+ * @param {string} message - User message
  */
+function submitForm(form, name, email, message) {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const formMessage = document.getElementById('formMessage');
+    
+    // Disable submit button
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+    
+    // Simulate API call
+    setTimeout(() => {
+        try {
+            // In a real application, you would send this data to your backend
+            const data = { name, email, message, timestamp: new Date() };
+            
+            // Log to console (for demo purposes)
+            console.log('Form submitted:', data);
+            
+            // Show success message
+            formMessage.textContent = `Thank you ${name}! I'll get back to you as soon as possible.`;
+            formMessage.classList.add('success');
+            
+            // Reset form
+            form.reset();
+            
+            // Reset button
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send Message';
+            
+            // Clear message after 5 seconds
+            setTimeout(() => {
+                formMessage.classList.remove('success');
+                formMessage.textContent = '';
+            }, 5000);
+        } catch (error) {
+            console.error('Form submission error:', error);
+            formMessage.textContent = 'An error occurred. Please try again.';
+            formMessage.classList.add('error');
+            
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send Message';
+        }
+    }, 1000);
+}
 
 /**
  * SCROLL EFFECTS
